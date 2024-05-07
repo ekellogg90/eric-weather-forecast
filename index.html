@@ -23,23 +23,27 @@
         <div class="row">
             
             <!-- Lefthand Nav w/ Search Bar -->
-            <div class="col-12 col-lg-4 col-md-4 d-flex">
-                <form class="d-grid" id="city-form">
-                    <fieldset>
-                        <legend>Search for a City</legend>
-                        <div class="mb-2">
-                            <input type="text" class="form-control" id="city" aria-describedby="cityInput">
-                        </div>
-                    </fieldset>
-
-                        <button type="submit" class="btn btn-primary">Submit</button>
-                </form>
-                <span id="city"></span>
+            <div class="col-12 col-lg-2 col-md-2 d-flex flex-column">
+                <div>
+                    <form class="d-grid" id="city-form">
+                        <fieldset>
+                            <legend>Search for a City</legend>
+                            <div class="mb-2">
+                                <input type="text" class="form-control" id="city" aria-describedby="cityInput">
+                            </div>
+                        </fieldset>
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+                <div>
+                    <span id="city-search-term"></span>
+                    <div id="city-container"></div>
+                </div>
             </div>
 
             <!-- Right 2/3 with Current Day Forecast + next 5 -->
-            <div class="col-12 col-lg-8 col-md-8 d-flex">
-                <div id="city-search-term"></div>
+            <div class="col-12 col-lg-10 col-md-10 d-flex">
+                <div id="city-current-day"></div>
                 <div id="city-weather-container"></div>
 
             </div>
