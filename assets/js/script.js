@@ -1,7 +1,20 @@
+/*
+TODO: error handling if city doesn't exist
+
+TODO: Enable buttons of cities searched
+
+TODO: Incorporate current dt/tm
+
+TODO: 5 day forecast
+
+TODO:  Clean up UI
+*/
+
 const cityFormEl = $('#city-form');
 const cityInputEl = $('#city');
 const cityWeatherContainerEl = $('#city-weather-container');
 const cityContainerEl = $('#city-container');
+const cityContainerBtn = $('#city-container button');
 const citySearchTerm = $('#city-search-term');
 const cityCurrentDay = $('#city-current-day');
 
@@ -25,6 +38,9 @@ function saveCityToStorage(cityList) {
 // Calls handleFormSubmit on form submittal
 cityFormEl.on('submit', handleFormSubmit);
 
+// Calls cityClick on Click
+cityContainerBtn.on('click', cityClick);
+
 function handleFormSubmit(event) {
     event.preventDefault();
     const cityName = cityInputEl.val().trim();
@@ -32,17 +48,40 @@ function handleFormSubmit(event) {
     if (!cityName) {
         alert("please enter a city name");
         return;
+    } else {
+        cityContainerEl.text("");  // Clears out the appended cities upon submit so the updated list can be re-added
+        cityCurrentDay.text("");
+        cityInputEl.val("");
     }
 
     const cityList = readCityFromStorage();
-    cityList.push(cityName);  // TODO add something to check if City is there already.  Add cities searched for as button elements?
+
+    // Keeps duplicates from Local Storage
+    if (cityList.indexOf(cityName) === -1) {
+        cityList.push(cityName);
+    }
+
     saveCityToStorage(cityList);
 
     fetchCityLatLon(cityName).then(function (response) {
         fetchCityInfo(response);
         displayCitySearched(cityList);
 });
-    //displayCitySearched(cityList);
+}
+
+// Not sure about this and 42
+function cityClick() {
+    //event.preventDefault();
+    const cityName = cityContainerBtn.attr('data-city');
+    console.log(cityName);
+
+    cityCurrentDay.text("");
+
+    fetchCityLatLon(cityName).then(function (response) {
+        fetchCityInfo(response);
+
+        console.log(cityName);
+    });
 }
 
 function fetchCityLatLon(city) {
@@ -56,11 +95,6 @@ function fetchCityLatLon(city) {
             }
             return response.json();
         }).then(function (cityData) {
-            /*
-            console.log(cityData);
-            console.log(`${city}'s latitutde: ${cityData[0].lat}`);
-            console.log(`${city}'s longitude: ${cityData[0].lon}`);
-            */
             return cityData;
         })
         .catch(function (error) {
@@ -73,7 +107,7 @@ function fetchCityLatLon(city) {
 function fetchCityInfo(cityData) {
     const cityUrl = "https://api.openweathermap.org/data/2.5/forecast?lat="+cityData[0].lat+"&lon="+cityData[0].lon+"&appid="+apiKey+"&mode=json&units=imperial";
 
-    fetch(cityUrl)  // need Date, Temp, Wind, Humidity
+    fetch(cityUrl)
         .then(function (response) {
             if (!response.ok) {
                 alert(`Error:${response.statusText}`);
@@ -84,20 +118,48 @@ function fetchCityInfo(cityData) {
             // Gives all weather data
             //console.log(cityInfo);
 
-            // City Name
-            console.log(cityInfo.city.name);
+            if (!cityInfo.city.name) {
+                cityCurrentDay.text('No city found');
+                return;
+            }
 
-            // Date
-            console.log(cityInfo.list[0].dt_txt); // TODO somehow set all these to current dt/tm?
+            // Set wind direction
+            let windDirection = cityInfo.list[0].wind.deg;
+            if (windDirection <= 60) {
+                windDirection = "North";
+            } else if (windDirection <= 140) {
+                windDirection = "East";
+            } else if (windDirection <= 230) {
+                windDirection = "South";
+            } else if (windDirection <= 320) {
+                windDirection = "West";
+            } else if (windDirection > 320) {
+                windDirection = "North";
+            } else {
+                windDirection = "No Wind";
+            }
 
-            // Temp
-            console.log(`Temp: ${cityInfo.list[0].main.temp}*F`);
+            const singleCityEl = $('<div>');
+            //singleCityEl.addClass("");
 
-            // Wind
-            console.log(`Wind Speed: ${cityInfo.list[0].wind.speed}mph`);
+            const singleCityName = $('<h2>');
+            singleCityName.text(cityInfo.city.name);
 
-            // Humidity
-            console.log(`Humidity: ${cityInfo.list[0].main.humidity}%`);
+            const singleCityDate = $('<p>');
+            singleCityDate.text(cityInfo.list[0].dt_txt);
+
+            const singleCityTemp = $('<p>');
+            singleCityTemp.text(`Temp: ${cityInfo.list[0].main.temp}*F`);
+
+            const singleCityWind = $('<p>');
+            singleCityWind.text(`Wind Speed: ${cityInfo.list[0].wind.speed}mph` + ' ' + `from the ${windDirection}`);    
+
+            const singleCityHumidity = $('<p>');
+            singleCityHumidity.text(`Humidity: ${cityInfo.list[0].main.humidity}%`)
+
+            singleCityEl.append(singleCityName, singleCityDate, singleCityTemp, singleCityWind);
+
+            cityCurrentDay.append(singleCityEl);
         })
         .catch(function (error) {
             alert(`Unable to obtain City Info`);
@@ -111,14 +173,14 @@ function fetchCityInfo(cityData) {
 
 function displayCitySearched(city) {
     if (city.length === 0) {
-        cityContainerEl.textContent = 'No city found';
+        cityContainerEl.text('No city located');
         return;
     }
 
-    console.log(city);
-
+    // Appends list of cities in localStorage beneath search bar
     for (let cityName of city) {
-        const cityEl = $('<h3>');
+        const cityEl = $('<button>');
+        cityEl.addClass('d-flex flex-column btn btn-secondary')
         cityEl.attr('data-city', `${cityName}`);
         cityEl.text(cityName);
 
@@ -126,11 +188,28 @@ function displayCitySearched(city) {
     }
 }
 
-// function buttonClickHandler(event) {
-//     const city = event.target.getAttribute('data-city'); // maybe pair with a .setAttribute('data-city', `${cityName}`)
+function buttonClickHandler(e) {
+    //const city = event.target.attr('data-city'); // maybe pair with a .setAttribute('data-city', `${cityName}`)
 
-//     if (city) {
+    $(document).ready(function() {
+        $("#city-container button").on("click", function(e){
+            let targetCity = e.target;
+            console.log(targetCity.attr('data-city'));  // unsure why this doesn't work.
+            console.log(e.target);
+            //console.log(e.data);
+            e.stopPropagation();
+            // fetchCityLatLon(data-city);  // I think I want to call this function with the selected city
+            // 
+        });
+    });
+}
 
-//     }
-// }
+//buttonClickHandler();
+
+// let myBtn = $("#city-container button");
+
+// myBtn.on("click", function() {
+    
+// });
+
 
