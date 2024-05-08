@@ -1,11 +1,10 @@
 /*
+
+TODO: Incorporate current dt/tm w/ dayJS.  convert unix
+
+TODO: 5 day forecast w/ Icon for Weather conditions
+
 TODO: error handling if city doesn't exist
-
-TODO: Enable buttons of cities searched
-
-TODO: Incorporate current dt/tm
-
-TODO: 5 day forecast
 
 TODO:  Clean up UI
 */
@@ -20,6 +19,8 @@ const cityCurrentDay = $('#city-current-day');
 
 const apiKey = "6e34f58ab2b58e72b5696fe8bcf776e7";
 const resultLimit = "1";
+
+const today = dayjs();
 
 // Retrieve City from Local Storage, initializes if not found
 function readCityFromStorage() {
@@ -38,8 +39,8 @@ function saveCityToStorage(cityList) {
 // Calls handleFormSubmit on form submittal
 cityFormEl.on('submit', handleFormSubmit);
 
-// Calls cityClick on Click
-cityContainerBtn.on('click', cityClick);
+// // Calls cityClickHandler on Click
+// cityContainerBtn.on('click', cityClickHandler);
 
 function handleFormSubmit(event) {
     event.preventDefault();
@@ -70,9 +71,9 @@ function handleFormSubmit(event) {
 }
 
 // Not sure about this and 42
-function cityClick() {
+function cityClickHandler(event) {
     //event.preventDefault();
-    const cityName = cityContainerBtn.attr('data-city');
+    const cityName = $(event.target).attr('data-city');
     console.log(cityName);
 
     cityCurrentDay.text("");
@@ -116,7 +117,7 @@ function fetchCityInfo(cityData) {
             return response.json();
         }).then(function (cityInfo) {
             // Gives all weather data
-            //console.log(cityInfo);
+            console.log(cityInfo);
 
             if (!cityInfo.city.name) {
                 cityCurrentDay.text('No city found');
@@ -140,13 +141,14 @@ function fetchCityInfo(cityData) {
             }
 
             const singleCityEl = $('<div>');
-            //singleCityEl.addClass("");
 
             const singleCityName = $('<h2>');
             singleCityName.text(cityInfo.city.name);
 
             const singleCityDate = $('<p>');
-            singleCityDate.text(cityInfo.list[0].dt_txt);
+            let todayUnixDate = cityInfo.list[0].dt;
+            // Convert Unix Date
+            singleCityDate.text(dayjs.unix(todayUnixDate).format('MMM D, YYYY, hh:mm:ss a'));
 
             const singleCityTemp = $('<p>');
             singleCityTemp.text(`Temp: ${cityInfo.list[0].main.temp}*F`);
@@ -160,16 +162,34 @@ function fetchCityInfo(cityData) {
             singleCityEl.append(singleCityName, singleCityDate, singleCityTemp, singleCityWind);
 
             cityCurrentDay.append(singleCityEl);
+
+
+            // 5 day forecast cards
+            for (let i = 8; i <= cityInfo.list.length; i = i + 8) {
+                const cityCardEl = $('<div>');
+
+                const cityCardName = $('<h3>');
+                cityCardName.text(cityInfo.city.name);
+
+                const cityCardDate = $('<p>');
+                let cardUnixDate = cityInfo.list[i].dt;
+                cityCardDate.text(dayjs.unix(cardUnixDate).format('MMM D, YYYY, hh:mm:ss a'));
+
+                const cityCardTemp = $('<p>');
+                cityCardTemp.text(`Wind Speed: ${cityInfo.list[i].wind.speed}mph`);
+
+                const cityCardHumidity = $('<p>');
+                cityCardHumidity.text(`Humidity: ${cityInfo.list[i].main.humidity}%`);
+
+                //append things
+
+            }
         })
         .catch(function (error) {
             alert(`Unable to obtain City Info`);
             console.log(error);
         });
 }
-
-// function getSelectedCity(city) {
-//     const cityUrl = 
-// }
 
 function displayCitySearched(city) {
     if (city.length === 0) {
@@ -183,33 +203,10 @@ function displayCitySearched(city) {
         cityEl.addClass('d-flex flex-column btn btn-secondary')
         cityEl.attr('data-city', `${cityName}`);
         cityEl.text(cityName);
+        cityEl.on('click', cityClickHandler);
 
         cityContainerEl.append(cityEl);
     }
 }
-
-function buttonClickHandler(e) {
-    //const city = event.target.attr('data-city'); // maybe pair with a .setAttribute('data-city', `${cityName}`)
-
-    $(document).ready(function() {
-        $("#city-container button").on("click", function(e){
-            let targetCity = e.target;
-            console.log(targetCity.attr('data-city'));  // unsure why this doesn't work.
-            console.log(e.target);
-            //console.log(e.data);
-            e.stopPropagation();
-            // fetchCityLatLon(data-city);  // I think I want to call this function with the selected city
-            // 
-        });
-    });
-}
-
-//buttonClickHandler();
-
-// let myBtn = $("#city-container button");
-
-// myBtn.on("click", function() {
-    
-// });
 
 
