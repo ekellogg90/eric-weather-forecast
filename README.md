@@ -10,7 +10,7 @@ N/A
 
 ## Usage
 
-App link - 
+App link - https://ekellogg90.github.io/eric-weather-forecast/
 
 Search for a City and click 'Submit':
 ![image](https://github.com/ekellogg90/eric-weather-forecast/assets/140920153/b7b3b9f0-0ae5-4f41-8c76-49e08149fb82)
