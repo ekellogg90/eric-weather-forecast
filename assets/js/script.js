@@ -1,14 +1,3 @@
-/*
-
-TODO: Incorporate current dt/tm w/ dayJS.  convert unix
-
-TODO: 5 day forecast w/ Icon for Weather conditions
-
-TODO: error handling if city doesn't exist
-
-TODO:  Clean up UI
-*/
-
 const cityFormEl = $('#city-form');
 const cityInputEl = $('#city');
 const cityWeatherContainerEl = $('#city-weather-container');
@@ -19,8 +8,6 @@ const cityCurrentDay = $('#city-current-day');
 
 const apiKey = "6e34f58ab2b58e72b5696fe8bcf776e7";
 const resultLimit = "1";
-
-const today = dayjs();
 
 // Retrieve City from Local Storage, initializes if not found
 function readCityFromStorage() {
@@ -39,9 +26,6 @@ function saveCityToStorage(cityList) {
 // Calls handleFormSubmit on form submittal
 cityFormEl.on('submit', handleFormSubmit);
 
-// // Calls cityClickHandler on Click
-// cityContainerBtn.on('click', cityClickHandler);
-
 function handleFormSubmit(event) {
     event.preventDefault();
     const cityName = cityInputEl.val().trim();
@@ -57,7 +41,7 @@ function handleFormSubmit(event) {
 
     const cityList = readCityFromStorage();
 
-    // Keeps duplicates from Local Storage
+    // Keeps duplicates out of from Local Storage
     if (cityList.indexOf(cityName) === -1) {
         cityList.push(cityName);
     }
@@ -70,9 +54,7 @@ function handleFormSubmit(event) {
 });
 }
 
-// Not sure about this and 42
 function cityClickHandler(event) {
-    //event.preventDefault();
     const cityName = $(event.target).attr('data-city');
     console.log(cityName);
 
@@ -141,6 +123,11 @@ function fetchCityInfo(cityData) {
             }
 
             const singleCityEl = $('<div>');
+            singleCityEl.addClass('px-2');
+
+            let cityIcon = cityInfo.list[0].weather[0].icon;
+            const singleCityIcon = $('<img>');
+            singleCityIcon.attr('src', `https://openweathermap.org/img/wn/${cityIcon}.png`);
 
             const singleCityName = $('<h2>');
             singleCityName.text(cityInfo.city.name);
@@ -148,7 +135,7 @@ function fetchCityInfo(cityData) {
             const singleCityDate = $('<p>');
             let todayUnixDate = cityInfo.list[0].dt;
             // Convert Unix Date
-            singleCityDate.text(dayjs.unix(todayUnixDate).format('MMM D, YYYY, hh:mm:ss a'));
+            singleCityDate.text(dayjs.unix(todayUnixDate).format('MMM D, YYYY'));
 
             const singleCityTemp = $('<p>');
             singleCityTemp.text(`Temp: ${cityInfo.list[0].main.temp}*F`);
@@ -159,30 +146,40 @@ function fetchCityInfo(cityData) {
             const singleCityHumidity = $('<p>');
             singleCityHumidity.text(`Humidity: ${cityInfo.list[0].main.humidity}%`)
 
-            singleCityEl.append(singleCityName, singleCityDate, singleCityTemp, singleCityWind);
+            singleCityName.append(singleCityIcon);
+
+            singleCityEl.append(singleCityName, singleCityDate, singleCityTemp, singleCityWind, singleCityHumidity);
 
             cityCurrentDay.append(singleCityEl);
 
 
             // 5 day forecast cards
-            for (let i = 8; i <= cityInfo.list.length; i = i + 8) {
+            cityWeatherContainerEl.text("");
+            for (let i = 7; i <= cityInfo.list.length; i = i + 8) {
                 const cityCardEl = $('<div>');
+                cityCardEl.addClass('mx-5 px-2 border border-dark text-white bg-dark');
 
-                const cityCardName = $('<h3>');
-                cityCardName.text(cityInfo.city.name);
+                let dataIcon = cityInfo.list[i].weather[0].icon;
+                const cityCardIcon = $('<img>');
+                cityCardIcon.addClass('img-fluid');
+                cityCardIcon.attr('src', `https://openweathermap.org/img/wn/${dataIcon}.png`);
 
-                const cityCardDate = $('<p>');
+                const cityCardDate = $('<h5>');
                 let cardUnixDate = cityInfo.list[i].dt;
-                cityCardDate.text(dayjs.unix(cardUnixDate).format('MMM D, YYYY, hh:mm:ss a'));
+                cityCardDate.text(dayjs.unix(cardUnixDate).format('MMM D, YYYY'));
 
                 const cityCardTemp = $('<p>');
-                cityCardTemp.text(`Wind Speed: ${cityInfo.list[i].wind.speed}mph`);
+                cityCardTemp.text(`Temp: ${cityInfo.list[i].main.temp}*F`);
+
+                const cityCardWindSpeed = $('<p>');
+                cityCardWindSpeed.text(`Wind Speed: ${cityInfo.list[i].wind.speed}mph`);
 
                 const cityCardHumidity = $('<p>');
                 cityCardHumidity.text(`Humidity: ${cityInfo.list[i].main.humidity}%`);
 
-                //append things
+                cityCardEl.append(cityCardIcon, cityCardDate, cityCardTemp, cityCardWindSpeed, cityCardHumidity);
 
+                cityWeatherContainerEl.append(cityCardEl);
             }
         })
         .catch(function (error) {

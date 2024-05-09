@@ -10,7 +10,7 @@
     integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous" />
   <link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.3/themes/base/jquery-ui.css" />
-  <link rel="stylesheet" href="./assets/css/style.css" />
+
   <title>Weather Dashboard</title>
 </head>
 
@@ -42,10 +42,9 @@
             </div>
 
             <!-- Right 2/3 with Current Day Forecast + next 5 -->
-            <div class="col-12 col-lg-10 col-md-10 d-flex">
-                <div id="city-current-day"></div>
-                <div id="city-weather-container"></div>
-
+            <div class="col-12 col-lg-10 col-md-10 d-flex flex-column">
+                <div id="city-current-day" class="d-flex flex-row w-80 border border-dark bg-info"></div>
+                <div id="city-weather-container" class="d-flex flex-row my-3"></div>
             </div>
 
         </div>
